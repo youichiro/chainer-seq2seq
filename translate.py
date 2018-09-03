@@ -7,6 +7,8 @@ from Utils import word2id
 from Opts import translate_opts
 from Nets import Seq2seq
 from train import encdec_convert
+from bleu import compute_bleu
+import numpy as np
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -19,18 +21,18 @@ def parse_args():
 
 def main():
     opts = vars(parse_args())
-    
+
     # Load model's parameters and a vocabulary
     prefix = os.path.join(os.path.dirname(opts['model']), 
                           os.path.basename(opts['model']).split('-')[0])
     params = pickle.load(open('{}.opts'.format(prefix), 'br'))
     svocab = [w.rstrip() for w in open('{}.svocab'.format(prefix), 'r')]
     tvocab = [w.rstrip() for w in open('{}.tvocab'.format(prefix), 'r')]
-    
+
     # Setup models
     svocab_size = len(svocab) + 3 # 3 means number of special tags such as
     tvocab_size = len(tvocab) + 3 # "UNK", "BOS", and "EOS" 
-    model = Seq2seq(svocab_size, tvocab_size, params)
+    model = Seq2seq(svocab, tvocab, params)
     serializers.load_npz(opts['model'], model)
     if opts['gpuid'] >= 0:
         cuda.get_device(opts['gpuid']).use()
@@ -60,7 +62,10 @@ def main():
                 out = ' '.join([id2word[i] for i in hyp])
                 print(out, end='\t')
             print('')
-
+    refs = refs.tolist()
+    refs = [[r] for r in refs]
+    bleu = compute_bleu(refs, hyps, smooth=True)[0]
+    print(bleu)
 
 if __name__ == '__main__':
     main()

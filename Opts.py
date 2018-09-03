@@ -37,31 +37,27 @@ def model_opts(parser):
 def train_opts(parser):
     # General options
     group = parser.add_argument_group('General')
-    group.add_argument('--save-dir', default='demo')
-    group.add_argument('--model', default='sample')
+    group.add_argument('--save-dir')
+    group.add_argument('--model', default='model')
     group.add_argument('--gpuid', type=int, default=-1)
 
     # Data options
     group = parser.add_argument_group('Data')
     group.add_argument('--train-src',
-                        help='source sentence list for training',
-                        default='./mt_data/concat-train.origin')
+                        help='source sentence list for training')
     group.add_argument('--train-tgt',
-                        help='target sentence list for training',
-                       default='./mt_data/concat-train.simp')
+                        help='target sentence list for training')
     group.add_argument('--valid-src',
-                        help='source sentence list for validation',
-                        default='./mt_data/concat-valid.origin')
+                        help='source sentence list for validation')
     group.add_argument('--valid-tgt', 
-                        help='target sentence list for validation',
-                        default='./mt_data/concat-valid.simp')
+                        help='target sentence list for validation')
 
     # Vocabulary options
     group = parser.add_argument_group('Vocab')
     group.add_argument('--src-vocabsize', type=int, default=50000)
     group.add_argument('--tgt-vocabsize', type=int, default=50000)
-    group.add_argument('--src-minfreq', type=int, default=0)
-    group.add_argument('--tgt-minfreq', type=int, default=0)
+    group.add_argument('--src-minfreq', type=int, default=1)
+    group.add_argument('--tgt-minfreq', type=int, default=1)
 
     # Truncation options
     group = parser.add_argument_group('Pruning')
@@ -73,7 +69,7 @@ def train_opts(parser):
     # Optimization options
     group = parser.add_argument_group('Optimization')
     group.add_argument('--batchsize', type=int, default=128)
-    group.add_argument('--epochs', type=int, default=15)
+    group.add_argument('--epochs', type=int, default=20)
     group.add_argument('--dout', type=float, default=0.3)
     group.add_argument('--optim', default='Adam', choices=['SGD', 'Adam'])
 
@@ -85,30 +81,25 @@ def train_opts(parser):
 
     # Logging options
     group = parser.add_argument_group('Logging')
-    parser.add_argument('--log-interval', type=int, default=10,
+    parser.add_argument('--log-interval', type=int, default=100,
                         help='number of iteration to show log')
 
 
 def translate_opts(parser):
     # General options
     group = parser.add_argument_group('General')
-    group.add_argument('--model', default='./demo/sample-e20.model',
-                        help='model for translation')
-    group.add_argument('--src', default='./mt_data/concat-test.origin',
-                        help='source sentence list for translation')
-    group.add_argument('--tgt', default='./mt_data/concat-test.simp',
-                        help='reference sentence list')
-    group.add_argument('--output', default='./pred.txt',
-                        help='file name for saving model output')
+    group.add_argument('--model', help='model for translation')
+    group.add_argument('--src', help='source sentence list for translation')
+    group.add_argument('--tgt', help='reference sentence list')
+    group.add_argument('--output', help='file name for saving model output')
     group.add_argument('--gpuid', type=int, default=-1)
-    group.add_argument('--maxlen', default=70,
-                        help='maximum length of output sentence')
+    group.add_argument('--maxlen', default=70, help='maximum length of output sentence')
     group.add_argument('--batchsize', type=int, default=100)
 
     # Beam search options
     group = parser.add_argument_group('Beam search')
-    group.add_argument('--beamsize', type=int, default=5, help='beam size')
-    group.add_argument('--n_cands', type=int, default=2, 
+    group.add_argument('--beamsize', type=int, default=1, help='beam size')
+    group.add_argument('--n_cands', type=int, default=1, 
                        help='number of output candidates')
     group.add_argument('--ranking',  default='None',
                        choices=['None', 'sbleu', 'sari'],

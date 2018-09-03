@@ -227,10 +227,10 @@ class Seq2seq(chainer.Chain):
             h, c, oxs = self.encoder.nstep(xs, reverse=self.reverse)
             result = []
             ws = self.xp.full(bs, BOS_ID, numpy.int32)
-            
+
             ht = [self.xp.zeros(self.units, 'f').reshape(1, self.units)
                   for _ in range(bs)] if self.feeding else None
- 
+
             for _ in range(maxlen):
                 if self.use_attn:
                     h, c, o, ht = self.decoder.onestep(ws, h, c, oxs, ht)
@@ -278,7 +278,7 @@ class Seq2seq(chainer.Chain):
                             h, c, o = self.decoder.onestep(w, h, c)
                         o = -F.log_softmax(o)
                         nbest_ids = get_argnbest(o, beamsize)[0]
-                        
+
                         # calclate log likelihood
                         for index in nbest_ids:
                             new_score = score + float(o[0][index].data)
