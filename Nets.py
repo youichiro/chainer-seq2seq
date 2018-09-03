@@ -3,7 +3,6 @@ import chainer.links as L
 import chainer.functions as F
 import chainer
 from chainer import cuda
-from bleu import compute_bleu
 from Const import BOS_ID, EOS_ID, IGNORE
 
 
@@ -298,11 +297,4 @@ class Seq2seq(chainer.Chain):
         if ranking == 'sbleu':
             hyps = self.sbleu_ranking(hyps, ys)
         return hyps[:n_cands]
-
-    def sbleu_ranking(self, hyps, ys):
-        size = len(hyps)
-        refs = [ys.tolist() for _ in range(size)]
-        sbleus = [compute_bleu(ref, hyp, smooth=True) for ref, hyp in zip(refs, hyps)]
-        outputs = [hyps[i] for i in  get_argnbest([sbleus], size, reverse=True)[0]]
-        return outputs
 

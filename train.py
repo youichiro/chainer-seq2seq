@@ -49,12 +49,10 @@ class CalculateSBLEU(chainer.training.Extension):
             for i in range(0, len(self.test_data), self.batch):
                 srcs, tgts = zip(*self.test_data[i:i+self.batch])
                 refs.extend([[t.tolist()] for t in tgts])
-                
                 srcs = [chainer.dataset.to_device(self.device, x) for x in srcs]
                 oys = self.model.translate(srcs, self.maxlen)
                 hyps.extend(oys)
-        sbleu = [compute_bleu(ref, hyp, smooth=True) for ref, hyp in zip(refs, hyps)]
-        sbleu = sum(sbleu) / len(sbleu)
+        sbleu = compute_bleu(refs, hyps, smooth=True)[0]
         chainer.report({self.key: sbleu})
 
 
@@ -153,10 +151,6 @@ def main():
     trainer.extend(extensions.LogReport(
         trigger=(opts['log_interval'], 'iteration')))
 
-    trainer.extend(extensions.PrintReport(
-        ['epoch', 'iteration', 'main/loss', 'elapsed_time']),
-        trigger=(opts['log_interval'], 'iteration'))
-
     trainer.extend(
         SaveModel(model, opts['save_dir'], opts['model']),
         trigger=(1, 'epoch'))
@@ -183,6 +177,11 @@ def main():
             trainer.extend(CalculateSBLEU(model, valid_data, 'valid/main/sbleu', 
                 batch=opts['batchsize'], device=opts['gpuid'], 
                 maxlen=opts['maxlen']), trigger=(1, 'epoch'))
+
+    trainer.extend(extensions.PrintReport(
+        ['epoch', 'iteration', 'main/loss', 'elapsed_time', 'valid/main/sbleu']),
+        trigger=(opts['log_interval'], 'iteration'))
+
 
     # Training
     print('start training')
