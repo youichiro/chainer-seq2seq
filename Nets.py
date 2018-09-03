@@ -3,7 +3,6 @@ import chainer.links as L
 import chainer.functions as F
 import chainer
 from chainer import cuda
-from nltk.translate import bleu_score
 from bleu import compute_bleu
 from Const import BOS_ID, EOS_ID, IGNORE
 

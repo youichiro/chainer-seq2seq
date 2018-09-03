@@ -156,8 +156,6 @@ def main():
     trainer.extend(extensions.PrintReport(
         ['epoch', 'iteration', 'main/loss', 'elapsed_time']),
         trigger=(opts['log_interval'], 'iteration'))
-    trainer.extend(extensions.PlotReport(
-        ['main/loss'], x_key='iteration', file_name='loss.png'))
 
     trainer.extend(
         SaveModel(model, opts['save_dir'], opts['model']),
@@ -185,8 +183,6 @@ def main():
             trainer.extend(CalculateSBLEU(model, valid_data, 'valid/main/sbleu', 
                 batch=opts['batchsize'], device=opts['gpuid'], 
                 maxlen=opts['maxlen']), trigger=(1, 'epoch'))
-            trainer.extend(extensions.PlotReport(['valid/main/sbleu'], 
-               x_key='epoch', file_name='sbleu.png'))
 
     # Training
     print('start training')
