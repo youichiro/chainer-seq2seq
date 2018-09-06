@@ -6,6 +6,7 @@ from chainer import cuda
 from Utils import word2id
 from Opts import translate_opts
 from Nets import Seq2seq
+from Const import IGNORE
 from train import encdec_convert
 from bleu import compute_bleu
 import numpy as np
@@ -45,26 +46,19 @@ def main():
 
     # Translating
     id2word = ['UNK', 'BOS', 'EOS'] + tvocab
+    references = []
+    translations = []
     if opts['beamsize'] < 2:
         for i in range(0, len(test_data), opts['batchsize']):
-            srcs, _, refs = encdec_convert(
-                                test_data[i:i+opts['batchsize']], opts['gpuid'])
+            srcs, _, refs = encdec_convert(test_data[i:i+opts['batchsize']], opts['gpuid'])
             hyps = model.translate(srcs, opts['maxlen'])
             for hyp in hyps:
                 out = ' '.join([id2word[i] for i in hyp])
                 print(out)
-    else:
-        for seqs in test_data:
-            src, _, ref = encdec_convert([seqs], opts['gpuid'])
-            hyps = model.beam(src, ref, opts['maxlen'], opts['beamsize'], 
-                              opts['n_cands'], opts['ranking'])
-            for hyp in hyps:
-                out = ' '.join([id2word[i] for i in hyp])
-                print(out, end='\t')
-            print('')
-    refs = refs.tolist()
-    refs = [[r] for r in refs]
-    bleu = compute_bleu(refs, hyps, smooth=True)[0]
+            references += [[[i for i in ref if i != IGNORE]] for ref in refs.tolist()]
+            translations += [hyp for hyp in hyps]
+
+    bleu = compute_bleu(references, translations, smooth=True)[0]
     print(bleu)
 
 if __name__ == '__main__':
